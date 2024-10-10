@@ -30,7 +30,7 @@ import StyledCard from '../StyledCard';
 import StyledHr from '../StyledHr';
 import Tags from '../Tags';
 import { H1, P, Span } from '../Text';
-import { Separator } from '../ui/Separator';
+import TruncatedTextWithTooltip from '../TruncatedTextWithTooltip';
 import UploadedFilePreview from '../UploadedFilePreview';
 
 import { ExpenseAccountingCategoryPill } from './ExpenseAccountingCategoryPill';
@@ -98,6 +98,7 @@ const ExpenseSummary = ({
   onEdit,
   drawerActionsContainer,
   openFileViewer,
+  enableKeyboardShortcuts,
   ...props
 }) => {
   const intl = useIntl();
@@ -131,6 +132,7 @@ const ExpenseSummary = ({
         onEdit={onEdit}
         expense={expense}
         isViewingExpenseInHostContext={isViewingExpenseInHostContext}
+        enableKeyboardShortcuts={enableKeyboardShortcuts}
         disabled={isLoading}
         onDelete={() => {
           onDelete?.(expense);
@@ -151,6 +153,7 @@ const ExpenseSummary = ({
               onDelete?.(expense);
               onClose?.();
             }}
+            enableKeyboardShortcuts={enableKeyboardShortcuts}
             displayMarkAsIncomplete
           />
         </Flex>
@@ -196,7 +199,7 @@ const ExpenseSummary = ({
           )}
         </Flex>
       </Flex>
-      <div className="flex gap-2 align-middle">
+      <div className="flex items-baseline gap-2">
         {shouldDisplayExpenseCategoryPill(LoggedInUser, expense, collective, host) && (
           <React.Fragment>
             <ExpenseAccountingCategoryPill
@@ -207,7 +210,6 @@ const ExpenseSummary = ({
               allowNone={!isLoggedInUserExpenseHostAdmin}
               showCodeInSelect={isLoggedInUserExpenseHostAdmin}
             />
-            <Separator orientation="vertical" className="h-[24px] w-[2px]" />
           </React.Fragment>
         )}
         <Tags expense={expense} isLoading={isLoading} canEdit={canEditTags} />
@@ -299,15 +301,7 @@ const ExpenseSummary = ({
         ) : (
           <P fontSize="14px" color="black.700" data-cy="expense-author">
             <FormattedDate value={expense.createdAt} dateStyle="medium" />
-            {expense?.comments && (
-              <React.Fragment>
-                <Spacer />
-                <MessageSquare size="16px" style={{ display: 'inline-block' }} />
-                &nbsp;
-                {expense.comments.totalCount}
-              </React.Fragment>
-            )}
-            {expense?.merchantId && (
+            {expense.merchantId && (
               <React.Fragment>
                 <Spacer />
                 <FormattedMessage
@@ -315,6 +309,28 @@ const ExpenseSummary = ({
                   defaultMessage="Merchant ID: {id}"
                   values={{ id: expense.merchantId }}
                 />
+              </React.Fragment>
+            )}
+            {expense.reference && (
+              <React.Fragment>
+                <Spacer />
+                <FormattedMessage
+                  id="ReferenceValue"
+                  defaultMessage="Ref: {reference}"
+                  values={{
+                    reference: (
+                      <TruncatedTextWithTooltip value={expense.reference} length={10} truncatePosition="middle" />
+                    ),
+                  }}
+                />
+              </React.Fragment>
+            )}
+            {expense.comments && (
+              <React.Fragment>
+                <Spacer />
+                <MessageSquare size="16px" style={{ display: 'inline-block' }} />
+                &nbsp;
+                {expense.comments.totalCount}
               </React.Fragment>
             )}
           </P>
@@ -535,6 +551,7 @@ ExpenseSummary.propTypes = {
     legacyId: PropTypes.number,
     accountingCategory: PropTypes.object,
     description: PropTypes.string.isRequired,
+    reference: PropTypes.string,
     longDescription: PropTypes.string,
     amount: PropTypes.number.isRequired,
     currency: PropTypes.string.isRequired,
@@ -662,6 +679,7 @@ ExpenseSummary.propTypes = {
   openFileViewer: PropTypes.func,
   /** Reference to the actions container element in the Expense Drawer */
   drawerActionsContainer: PropTypes.object,
+  enableKeyboardShortcuts: PropTypes.bool,
 };
 
 export default ExpenseSummary;
